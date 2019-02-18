@@ -101,7 +101,7 @@ class Ui_Form(object):
 
 
 
-    def noEnabled(self):
+    def noEnabled(self):#开始运行时锁定所有编辑栏
         self.pushButton.setEnabled(False)
         self.lineEdit.setEnabled(False)
         self.lineEdit_2.setEnabled(False)
@@ -109,7 +109,7 @@ class Ui_Form(object):
         self.lineEdit_4.setEnabled(False)
         self.lineEdit_5.setEnabled(False)
 
-    def enabled(self):
+    def enabled(self):#运行完成解锁编辑栏
         self.pushButton.setEnabled(True)
         self.lineEdit.setEnabled(True)
         self.lineEdit_2.setEnabled(True)
@@ -120,7 +120,7 @@ class Ui_Form(object):
 
 
     def main(self):
-
+        #开启多线程
         t = threading.Thread(target=finishing)
         t.setDaemon(True)
         t.start()
@@ -132,6 +132,7 @@ class Ui_Form(object):
 
 
 def path_name(p):
+    #递归调用查找所有视频文件
     suf = ui.lineEdit_2.text().lower().split()
     for i in os.listdir(p):
         new_path = os.path.join(p,i)
@@ -207,7 +208,7 @@ def finishing():
         sheet.set_column(0, 14, xlsx_width, head_style)
 
         head = ["文件名", "文件路径", "文件格式", "文件总帧数", "视频高度宽度"]
-
+        #写入Excel表头
         for i in range(0, 5):
             sheet.write_string(0, i, head[i], head_style)
 
@@ -223,7 +224,7 @@ def finishing():
 
             ui.label_7.setText("正在读取文件 " + os.path.split(mov)[1] + " [当前第 "+str(mov_number) +  " 个，共计 "+Number_of_files+" 个]")
 
-            vc = cv2.VideoCapture(mov)
+            vc = cv2.VideoCapture(mov)#读取视频文件
             if vc.isOpened():
                 is_open,frame = vc.read()
             else:
@@ -250,7 +251,7 @@ def finishing():
             if is_open:
                 Intercept_interval = int(all_frame/11)
 
-            if is_open:
+            if is_open:#设置需要截图的帧数
                 Screenshot_frames = []
                 for i in range(1,11):
                     Screenshot_frames.append(Intercept_interval*i)
@@ -260,14 +261,16 @@ def finishing():
                 is_excel = True
 
                 if vc.get(1)-1 in Screenshot_frames:
+                    #截图
                     inage = cv2.resize(frame, (int(p_width), int(p_height)), 0, 0, cv2.INTER_LINEAR)
+                    #保存截图文件
                     cv2.imencode('.jpg', inage)[1].tofile(test_jpg +"\\"+ str(int(vc.get(1))-1) + "_.jpg")
 
                 is_open, frame = vc.read()
 
 
             ui.label_8.setText("正在写入Excel文件 "+ " [当前第 "+str(mov_number) +  " 个，共计 "+Number_of_files+" 个]")
-
+            #写入Excel文档
             sheet.set_row(y, xlsx_height,style)
 
             for i in range(0,5):
